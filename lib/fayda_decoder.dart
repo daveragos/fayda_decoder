@@ -1,13 +1,17 @@
-/// Offline decoder and signature verifier for the QR code on the Ethiopian
-/// Fayda national ID card.
+/// Read and verify the QR code on the Ethiopian Fayda national ID card,
+/// entirely on-device.
 ///
-/// - [decodePayload]: you already have the QR text (from a camera scanner).
-///   [isFaydaPayload] filters scanner callbacks cheaply.
-/// - [decodeImage]: you have a photo (JPEG, PNG, WebP, ...).
-///   [decodeImageInBackground] does the same off the UI isolate.
-/// - [decodeImageData]: you have raw pixels, for example a camera frame via
-///   [RgbaImage.fromLuminance] or [RgbaImage.fromBgra].
-/// - [verifySignature]: check the card's RS256 signature against NIDP's key.
+/// - [decodePayload]: you have the QR text, for example from a camera
+///   scanner. [isFaydaPayload] filters scanner callbacks cheaply.
+/// - [decodeImageInBackground]: you have a photo (JPEG, PNG, WebP, ...).
+///   [decodeImage] does the same on the calling isolate.
+/// - [decodeImageDataInBackground]: you have raw pixels, for example a
+///   camera frame via [RgbaImage.fromLuminance] or [RgbaImage.fromBgra].
+/// - [verifySignature], or `result.verify()`: check the card's RS256
+///   signature against NIDP's key.
+///
+/// For tests, `package:fayda_decoder/testing.dart` builds synthetic signed
+/// cards and QR images.
 ///
 /// Community project. Not affiliated with or endorsed by Ethiopia's National
 /// ID Program (NIDP).

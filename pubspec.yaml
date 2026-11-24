@@ -13,6 +13,12 @@ topics:
   - qr-code
   - kyc
 
+screenshots:
+  - description: Example app home screen with camera, photo and sample-card options.
+    path: doc/screenshots/home.png
+  - description: A decoded synthetic card with its fields and a verified signature badge.
+    path: doc/screenshots/result.png
+
 executables:
   fayda_decoder:
 
