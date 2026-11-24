@@ -1,3 +1,10 @@
+## 0.1.1
+
+- Read the FAN on cards that store it in space-separated groups
+  (`9999  9999  9999  9999`). Those cards decoded and verified, but
+  `fields.fan` came back `null`. `fan` is now digits only; `raw.map` keeps
+  the original text.
+
 ## 0.1.0
 
 First release.
