@@ -19,4 +19,9 @@
 library;
 
 export 'src/testing/fixtures.dart'
-    show buildTestPayload, buildTestQrPng, faydaTestFace, faydaTestPublicKeyPem;
+    show
+        buildTestPayload,
+        buildTestQrImage,
+        buildTestQrPng,
+        faydaTestFace,
+        faydaTestPublicKeyPem;

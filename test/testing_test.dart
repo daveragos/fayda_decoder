@@ -73,5 +73,11 @@ void main() {
         );
       }
     });
+
+    test('buildTestQrImage feeds decodeImageData', () async {
+      final payload = buildTestPayload();
+      expect(await decodeImageData(buildTestQrImage(payload)),
+          equals(decodePayload(payload)));
+    });
   });
 }

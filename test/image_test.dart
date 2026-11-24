@@ -1,10 +1,10 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:fayda_decoder/fayda_decoder.dart';
 import 'package:image/image.dart' as img;
-import 'package:qr/qr.dart';
 import 'package:test/test.dart';
 
 import 'helpers.dart';
@@ -45,32 +45,11 @@ void main() {
 
     test('decodes an Ethiopic name split across QR segments', () async {
       // Byte, numeric and byte segments, so the UTF-8 repair has to splice
-      // each byte segment back into the right place.
-      final payload = QrPayload()
-        ..addTypedData(utf8.encode('UklGRg:DLT:አልማዝ ተስፋዬ:V:4:G:F:A:'))
-        ..addNumeric('6140987654321098')
-        ..addTypedData(utf8.encode(':D:1994/05/07:SIGN:e30..c2ln'));
-      final qr = QrImage(QrCode(
-        payload: payload,
-        errorCorrectLevel: QrErrorCorrectLevel.low,
-      ));
-      final image = img.Image(
-        width: (qr.moduleCount + 8) * 6,
-        height: (qr.moduleCount + 8) * 6,
-      );
-      img.fill(image, color: img.ColorRgb8(255, 255, 255));
-      for (var r = 0; r < qr.moduleCount; r++) {
-        for (var c = 0; c < qr.moduleCount; c++) {
-          if (!qr.isDark(r, c)) continue;
-          img.fillRect(image,
-              x1: (c + 4) * 6,
-              y1: (r + 4) * 6,
-              x2: (c + 5) * 6 - 1,
-              y2: (r + 5) * 6 - 1,
-              color: img.ColorRgb8(0, 0, 0));
-        }
-      }
-      final result = await decodeImage(img.encodePng(image)) as FaydaSuccess;
+      // each byte segment back into the right place. Rendered with
+      // package:qr: byte('UklGRg:DLT:አልማዝ ተስፋዬ:V:4:G:F:A:'),
+      // numeric('6140987654321098'), byte(':D:1994/05/07:SIGN:e30..c2ln').
+      final png = File('test/fixtures/mixed_segments_qr.png').readAsBytesSync();
+      final result = await decodeImage(png) as FaydaSuccess;
       expect(result.fields.fullName, 'አልማዝ ተስፋዬ');
       expect(result.fields.fan, '6140987654321098');
       expect(result.fields.dateOfBirth, '1994-05-07');

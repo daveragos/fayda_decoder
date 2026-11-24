@@ -5,6 +5,7 @@ import 'package:image/image.dart' as img;
 import 'package:zxing2/qrcode.dart';
 
 import '../base64.dart';
+import '../pixels.dart';
 import '../result.dart';
 import '../rsa.dart';
 import 'test_key.dart';
@@ -96,6 +97,35 @@ Uint8List buildTestQrPng(
   String payload, {
   int moduleSize = 4,
   int quietZone = 4,
+}) =>
+    img.encodePng(
+      renderTestQr(payload, moduleSize: moduleSize, quietZone: quietZone),
+    );
+
+/// Renders [payload] as raw pixels, for testing `decodeImageData` and
+/// camera-frame code paths. See [buildTestQrPng].
+RgbaImage buildTestQrImage(
+  String payload, {
+  int moduleSize = 4,
+  int quietZone = 4,
+}) {
+  final image = renderTestQr(
+    payload,
+    moduleSize: moduleSize,
+    quietZone: quietZone,
+  ).convert(numChannels: 4);
+  return RgbaImage(
+    data: image.getBytes(order: img.ChannelOrder.rgba),
+    width: image.width,
+    height: image.height,
+  );
+}
+
+/// Renders [payload] as a black-on-white QR code image.
+img.Image renderTestQr(
+  String payload, {
+  int moduleSize = 4,
+  int quietZone = 4,
 }) {
   // Encoder takes ISO-8859-1 text; passing UTF-8 bytes as Latin-1 characters
   // stores the raw UTF-8 bytes.
@@ -120,7 +150,7 @@ Uint8List buildTestQrPng(
       );
     }
   }
-  return img.encodePng(image);
+  return image;
 }
 
 String _pad(int value, int width) => value.toString().padLeft(width, '0');
