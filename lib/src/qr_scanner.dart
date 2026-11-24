@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:zxing2/qrcode.dart';
@@ -71,7 +72,8 @@ final class ZxingQrScanner implements QrScanner {
       try {
         final result =
             QRCodeReader().decode(BinaryBitmap(binarizer), hints: hints);
-        if (result.text.isNotEmpty) return QrScanDecoded([result.text]);
+        final text = _repairByteSegments(result);
+        if (text.isNotEmpty) return QrScanDecoded([text]);
       } on NotFoundException {
         // Nothing that looks like a QR with this binarizer.
       } on ReaderException {
@@ -84,6 +86,55 @@ final class ZxingQrScanner implements QrScanner {
       }
     }
     return located ? const QrScanUnreadable() : const QrScanNone();
+  }
+
+  /// zxing2 0.2.x reads byte-mode data into an `Int8List` and decodes it
+  /// as-is, so every byte >= 0x80 turns into U+FFFD. That destroys
+  /// non-ASCII text such as Ethiopic names. The raw bytes survive in the
+  /// result metadata, so re-decode each byte segment and splice it back in
+  /// place of its mangled form.
+  static String _repairByteSegments(Result result) {
+    final text = result.text;
+    if (!text.contains('�')) return text;
+    final segments = result.resultMetadata[ResultMetadataType.byteSegments];
+    if (segments is! List) return text;
+
+    final out = StringBuffer();
+    var cursor = 0;
+    for (final segment in segments.whereType<List<int>>()) {
+      final bytes = Uint8List.fromList([for (final b in segment) b & 0xff]);
+      // The mangled form, as zxing2 produced it with either codec it uses.
+      final mangledCandidates = {
+        const Utf8Codec(allowMalformed: true).decode(segment),
+        const Latin1Codec(allowInvalid: true).decode(segment),
+      };
+      var index = -1;
+      var mangled = '';
+      for (final candidate in mangledCandidates) {
+        final i = text.indexOf(candidate, cursor);
+        if (i != -1 && (index == -1 || i < index)) {
+          index = i;
+          mangled = candidate;
+        }
+      }
+      if (index == -1) return text; // Unexpected shape: leave it untouched.
+      out
+        ..write(text.substring(cursor, index))
+        ..write(_decodeSegment(bytes));
+      cursor = index + mangled.length;
+    }
+    out.write(text.substring(cursor));
+    return out.toString();
+  }
+
+  /// UTF-8 when the bytes are valid UTF-8, otherwise ISO-8859-1 (the QR
+  /// default).
+  static String _decodeSegment(Uint8List bytes) {
+    try {
+      return utf8.decode(bytes);
+    } on FormatException {
+      return latin1.decode(bytes);
+    }
   }
 
   /// RGBA bytes to ARGB ints, composited over white so transparent
