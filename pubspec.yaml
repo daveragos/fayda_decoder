@@ -1,0 +1,19 @@
+name: fayda_decoder
+description: >-
+  Offline decoder and signature verifier for the QR code on the Ethiopian
+  Fayda national ID card. Community port; not affiliated with NIDP.
+version: 0.1.0
+
+topics:
+  - ethiopia
+  - fayda
+  - national-id
+  - qr-code
+  - kyc
+
+environment:
+  sdk: ^3.5.0
+
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.25.6
