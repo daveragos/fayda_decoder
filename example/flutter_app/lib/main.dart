@@ -14,6 +14,7 @@ class FaydaExampleApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Fayda Decoder',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(colorSchemeSeed: _seed),
       darkTheme: ThemeData(colorSchemeSeed: _seed, brightness: Brightness.dark),
       home: const HomeScreen(),

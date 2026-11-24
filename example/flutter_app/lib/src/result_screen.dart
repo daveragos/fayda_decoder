@@ -105,6 +105,7 @@ class _CardView extends StatelessWidget {
           ),
           _Field(
             label: 'Date of birth',
+            copyValue: fields.dateOfBirth,
             value: fields.dateOfBirth == null
                 ? null
                 : '${fields.dateOfBirth}${age == null ? '' : '  (age $age)'}',
@@ -155,7 +156,7 @@ class _Field extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final copy = copyValue ?? value;
+    final copy = copyValue;
     return ListTile(
       contentPadding: EdgeInsets.zero,
       title: Text(label),
