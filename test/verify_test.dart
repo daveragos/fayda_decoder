@@ -106,6 +106,14 @@ void main() {
     });
   });
 
+  test('verify() extension matches verifySignature', () {
+    final result = parse(payload);
+    expect(
+      result.verify(publicKeyPem: publicKeyPem).toJson(),
+      verifySignature(result, publicKeyPem: publicKeyPem).toJson(),
+    );
+  });
+
   test('bundled key matches the published SPKI SHA-256 fingerprint', () {
     final body = faydaV4PublicKeyPem
         .replaceAll(RegExp(r'-----[A-Z ]+-----'), '')

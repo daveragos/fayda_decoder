@@ -134,6 +134,49 @@ void main() {
     });
   });
 
+  group('isFaydaPayload', () {
+    test('agrees with decodePayload on every vector', () {
+      for (final vector in loadVectors()) {
+        final result = decodePayload(vector.payload);
+        final notFayda = result is FaydaFailure &&
+            result.error.code == FaydaErrorCode.notFayda;
+        expect(isFaydaPayload(vector.payload), !notFayda, reason: vector.name);
+      }
+    });
+
+    test('rejects overlapping and out-of-order markers', () {
+      expect(isFaydaPayload('x:DLT:SIGN:abc'), isFalse);
+      expect(isFaydaPayload('x:SIGN:a:DLT:Name:V:4'), isFalse);
+      expect(isFaydaPayload('x:DLT:  :V:4:SIGN:a'), isFalse);
+      expect(isFaydaPayload(' x:DLT:Name:V:4:SIGN: '), isTrue);
+    });
+  });
+
+  group('FaydaFields helpers', () {
+    final fields = (decodePayload(validPayload()) as FaydaSuccess).fields;
+
+    test('formattedFan groups digits like the printed card', () {
+      expect(fields.formattedFan, '6140 1234 1234 1234');
+      const odd = FaydaFields(
+        fullName: 'x',
+        gender: null,
+        fan: '1234567890',
+        dateOfBirth: null,
+        face: null,
+      );
+      expect(odd.formattedFan, '1234 5678 90');
+      expect(odd.ageAt(DateTime(2020)), isNull);
+    });
+
+    test('ageAt counts completed years', () {
+      // Born 2002-11-26.
+      expect(fields.ageAt(DateTime(2020, 11, 25)), 17);
+      expect(fields.ageAt(DateTime(2020, 11, 26)), 18);
+      expect(fields.ageAt(DateTime(2021, 1, 1)), 18);
+      expect(fields.age, greaterThanOrEqualTo(23));
+    });
+  });
+
   test('libraryVersion matches pubspec.yaml', () {
     final pubspec = File('pubspec.yaml').readAsStringSync();
     final version =

@@ -199,3 +199,17 @@ SignatureVerification verifySignature(
     reason: verified ? null : VerificationFailureReason.invalidSignature,
   );
 }
+
+/// Method-style access to [verifySignature].
+extension FaydaSuccessVerification on FaydaSuccess {
+  /// Same as `verifySignature(this, publicKeyPem: publicKeyPem)`.
+  ///
+  /// ```dart
+  /// if (decodePayload(text) case final FaydaSuccess card
+  ///     when card.verify().verified) {
+  ///   // issued by NIDP, unaltered
+  /// }
+  /// ```
+  SignatureVerification verify({String? publicKeyPem}) =>
+      verifySignature(this, publicKeyPem: publicKeyPem);
+}

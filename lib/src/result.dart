@@ -100,6 +100,34 @@ final class FaydaFields {
     );
   }
 
+  /// [fan] in groups of four, as printed on the card:
+  /// `6140 1234 1234 1234`.
+  String? get formattedFan {
+    final digits = fan;
+    if (digits == null) return null;
+    final groups = [
+      for (var i = 0; i < digits.length; i += 4)
+        digits.substring(i, i + 4 > digits.length ? digits.length : i + 4),
+    ];
+    return groups.join(' ');
+  }
+
+  /// Age in completed years on [date], or null without a date of birth.
+  ///
+  /// For age gates: `fields.ageAt(DateTime.now())! >= 18`.
+  int? ageAt(DateTime date) {
+    final dob = dateOfBirthUtc;
+    if (dob == null) return null;
+    var years = date.year - dob.year;
+    final hadBirthday = date.month > dob.month ||
+        (date.month == dob.month && date.day >= dob.day);
+    if (!hadBirthday) years--;
+    return years;
+  }
+
+  /// Age in completed years today, or null without a date of birth.
+  int? get age => ageAt(DateTime.now());
+
   /// snake_case JSON matching the shared schema.
   Map<String, Object?> toJson() => {
         'full_name': fullName,

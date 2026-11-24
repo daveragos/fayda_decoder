@@ -14,6 +14,32 @@ const _notFayda = FaydaFailure(FaydaError(
   'The QR payload is not a recognizable Fayda ID structure.',
 ));
 
+/// Whether [text] has the structure of a Fayda QR payload.
+///
+/// A cheap check (no field validation, no base64 decoding) for filtering
+/// barcode-scanner callbacks, which fire for every code in view:
+///
+/// ```dart
+/// onDetect: (capture) {
+///   final text = capture.barcodes.firstOrNull?.rawValue;
+///   if (text == null || !isFaydaPayload(text)) return;
+///   final result = decodePayload(text);
+/// }
+/// ```
+///
+/// Returns true exactly when [decodePayload] would not report
+/// [FaydaErrorCode.notFayda].
+bool isFaydaPayload(String text) {
+  final payload = text.trim();
+  final dltIndex = payload.indexOf(_dltMarker);
+  if (dltIndex == -1) return false;
+  final fieldsStart = dltIndex + _dltMarker.length;
+  final signIndex = payload.lastIndexOf(_signMarker);
+  if (signIndex < fieldsStart) return false;
+  final name = payload.substring(fieldsStart, signIndex).split(':').first;
+  return name.trim().isNotEmpty;
+}
+
 /// Parses the text content of a Fayda ID QR code.
 ///
 /// Use this when something else (a camera scanner such as `mobile_scanner`,
