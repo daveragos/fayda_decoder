@@ -1,0 +1,23 @@
+name: fayda_decoder_example
+description: "Scan and verify Fayda ID cards with fayda_decoder."
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.13.3
+
+dependencies:
+  fayda_decoder:
+    path: ../..
+  flutter:
+    sdk: flutter
+  image_picker: ^1.2.4
+  mobile_scanner: ^7.5.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true

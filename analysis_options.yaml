@@ -1,6 +1,9 @@
 include: package:lints/recommended.yaml
 
 analyzer:
+  exclude:
+    # A Flutter app with its own analysis options; run `flutter analyze` there.
+    - example/flutter_app/**
   language:
     strict-casts: true
     strict-inference: true
