@@ -14,7 +14,7 @@ you test with locally, outside the repository.
 
 ```bash
 dart pub get
-dart format .
+dart format lib bin test example/fayda_decoder_example.dart
 dart analyze --fatal-infos
 dart test                  # VM
 dart test --platform chrome  # browser subset (test/platform_test.dart, test/testing_test.dart)
@@ -24,7 +24,8 @@ The Flutter example has its own checks:
 
 ```bash
 cd example/flutter_app
-flutter analyze && flutter test
+flutter pub get
+dart format . && flutter analyze && flutter test
 ```
 
 Parsing behaviour follows the upstream
