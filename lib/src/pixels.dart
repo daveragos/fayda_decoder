@@ -17,6 +17,106 @@ final class RgbaImage {
     }
   }
 
+  /// Builds an image from an 8-bit luminance (grayscale) buffer.
+  ///
+  /// This is the Y plane of a YUV420 or NV21 camera frame, which is all a QR
+  /// decoder needs. With the `camera` package on Android
+  /// (`ImageFormatGroup.yuv420` or `nv21`):
+  ///
+  /// ```dart
+  /// final y = cameraImage.planes.first;
+  /// final image = RgbaImage.fromLuminance(
+  ///   y.bytes,
+  ///   width: cameraImage.width,
+  ///   height: cameraImage.height,
+  ///   bytesPerRow: y.bytesPerRow,
+  /// );
+  /// ```
+  ///
+  /// [bytesPerRow] defaults to [width]; pass the plane's row stride when rows
+  /// are padded.
+  factory RgbaImage.fromLuminance(
+    Uint8List luminance, {
+    required int width,
+    required int height,
+    int? bytesPerRow,
+  }) {
+    final stride = bytesPerRow ?? width;
+    _checkSource(luminance, width, height, stride, 1);
+    final out = Uint8List(width * height * 4);
+    var o = 0;
+    for (var y = 0; y < height; y++) {
+      final row = y * stride;
+      for (var x = 0; x < width; x++) {
+        final v = luminance[row + x];
+        out[o] = v;
+        out[o + 1] = v;
+        out[o + 2] = v;
+        out[o + 3] = 255;
+        o += 4;
+      }
+    }
+    return RgbaImage(data: out, width: width, height: height);
+  }
+
+  /// Builds an image from BGRA8888 pixels, the iOS camera format.
+  ///
+  /// With the `camera` package on iOS (`ImageFormatGroup.bgra8888`):
+  ///
+  /// ```dart
+  /// final plane = cameraImage.planes.first;
+  /// final image = RgbaImage.fromBgra(
+  ///   plane.bytes,
+  ///   width: cameraImage.width,
+  ///   height: cameraImage.height,
+  ///   bytesPerRow: plane.bytesPerRow,
+  /// );
+  /// ```
+  ///
+  /// [bytesPerRow] defaults to `width * 4`.
+  factory RgbaImage.fromBgra(
+    Uint8List bgra, {
+    required int width,
+    required int height,
+    int? bytesPerRow,
+  }) {
+    final stride = bytesPerRow ?? width * 4;
+    _checkSource(bgra, width, height, stride, 4);
+    final out = Uint8List(width * height * 4);
+    var o = 0;
+    for (var y = 0; y < height; y++) {
+      var i = y * stride;
+      for (var x = 0; x < width; x++, i += 4, o += 4) {
+        out[o] = bgra[i + 2];
+        out[o + 1] = bgra[i + 1];
+        out[o + 2] = bgra[i];
+        out[o + 3] = bgra[i + 3];
+      }
+    }
+    return RgbaImage(data: out, width: width, height: height);
+  }
+
+  static void _checkSource(
+    Uint8List source,
+    int width,
+    int height,
+    int stride,
+    int bytesPerPixel,
+  ) {
+    if (width <= 0 || height <= 0) {
+      throw ArgumentError('Image dimensions must be positive');
+    }
+    if (stride < width * bytesPerPixel) {
+      throw ArgumentError.value(
+          stride, 'bytesPerRow', 'Must be at least width * $bytesPerPixel');
+    }
+    final needed = stride * (height - 1) + width * bytesPerPixel;
+    if (source.length < needed) {
+      throw ArgumentError.value(source.length, 'length',
+          'Buffer too small for ${width}x$height with $stride bytes per row');
+    }
+  }
+
   /// RGBA bytes.
   final Uint8List data;
 
