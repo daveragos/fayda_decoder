@@ -1,0 +1,153 @@
+{
+  "$comment": "Synthetic Fayda payload test vectors. Every language port must pass these. All data is fake.",
+  "vectors": [
+    {
+      "name": "valid v4, latin name",
+      "payload": "UklGRjQAAABXRUJQVlA4ICgAAACQAQCdASoIAAgAAUAmJYgCdLoAA5gA_ufkv43m81rW_tTYqp5OAAAA:DLT:Abebe Kebede Alemu:V:4:G:M:A:6140123412341234:D:2002/11/26:SIGN:eyJhbGciOiJSUzI1NiIsImtpZCI6ImZha2UifQ.eyJzeW50aGV0aWMiOnRydWV9.ZmFrZS1zaWduYXR1cmU",
+      "options": {
+        "includeFace": true
+      },
+      "expected": {
+        "ok": true,
+        "payload_version": "4",
+        "fields": {
+          "full_name": "Abebe Kebede Alemu",
+          "gender": "M",
+          "fan": "6140123412341234",
+          "date_of_birth": "2002-11-26",
+          "face": {
+            "format": "webp",
+            "base64": "UklGRjQAAABXRUJQVlA4ICgAAACQAQCdASoIAAgAAUAmJYgCdLoAA5gA/ufkv43m81rW/tTYqp5OAAAA"
+          }
+        },
+        "signature": {
+          "present": true,
+          "verified": null
+        }
+      }
+    },
+    {
+      "name": "valid v4, ethiopic name, face excluded by default",
+      "payload": "UklGRjQAAABXRUJQVlA4ICgAAACQAQCdASoIAAgAAUAmJYgCdLoAA5gA_ufkv43m81rW_tTYqp5OAAAA:DLT:አልማዝ ተስፋዬ በቀለ:V:4:G:F:A:6140987654321098:D:1994/05/07:SIGN:eyJhbGciOiJSUzI1NiIsImtpZCI6ImZha2UifQ.eyJzeW50aGV0aWMiOnRydWV9.ZmFrZS1zaWduYXR1cmU",
+      "options": {},
+      "expected": {
+        "ok": true,
+        "payload_version": "4",
+        "fields": {
+          "full_name": "አልማዝ ተስፋዬ በቀለ",
+          "gender": "F",
+          "fan": "6140987654321098",
+          "date_of_birth": "1994-05-07",
+          "face": null
+        },
+        "signature": {
+          "present": true,
+          "verified": null
+        }
+      }
+    },
+    {
+      "name": "bad DOB becomes null, parse still succeeds",
+      "payload": "UklGRjQAAABXRUJQVlA4ICgAAACQAQCdASoIAAgAAUAmJYgCdLoAA5gA_ufkv43m81rW_tTYqp5OAAAA:DLT:Chaltu Gemechu Tolessa:V:4:G:F:A:6140111122223333:D:1990/02/31:SIGN:eyJhbGciOiJSUzI1NiIsImtpZCI6ImZha2UifQ.eyJzeW50aGV0aWMiOnRydWV9.ZmFrZS1zaWduYXR1cmU",
+      "options": {},
+      "expected": {
+        "ok": true,
+        "fields": {
+          "full_name": "Chaltu Gemechu Tolessa",
+          "date_of_birth": null,
+          "fan": "6140111122223333"
+        }
+      }
+    },
+    {
+      "name": "bad FAN becomes null, parse still succeeds",
+      "payload": "UklGRjQAAABXRUJQVlA4ICgAAACQAQCdASoIAAgAAUAmJYgCdLoAA5gA_ufkv43m81rW_tTYqp5OAAAA:DLT:Dawit Haile Mariam:V:4:G:M:A:12AB34:D:1988/12/01:SIGN:eyJhbGciOiJSUzI1NiIsImtpZCI6ImZha2UifQ.eyJzeW50aGV0aWMiOnRydWV9.ZmFrZS1zaWduYXR1cmU",
+      "options": {},
+      "expected": {
+        "ok": true,
+        "fields": {
+          "full_name": "Dawit Haile Mariam",
+          "fan": null,
+          "date_of_birth": "1988-12-01"
+        }
+      }
+    },
+    {
+      "name": "non-webp face is dropped even when requested",
+      "payload": "aGVsbG8td29ybGQ:DLT:Hana Girma Wolde:V:4:G:F:A:6140222233334444:D:2000/01/15:SIGN:eyJhbGciOiJSUzI1NiIsImtpZCI6ImZha2UifQ.eyJzeW50aGV0aWMiOnRydWV9.ZmFrZS1zaWduYXR1cmU",
+      "options": {
+        "includeFace": true
+      },
+      "expected": {
+        "ok": true,
+        "fields": {
+          "full_name": "Hana Girma Wolde",
+          "face": null
+        }
+      }
+    },
+    {
+      "name": "unknown version is rejected but raw map is preserved",
+      "payload": "UklGRjQAAABXRUJQVlA4ICgAAACQAQCdASoIAAgAAUAmJYgCdLoAA5gA_ufkv43m81rW_tTYqp5OAAAA:DLT:Samuel Bekele Ayele:V:5:G:M:A:6140333344445555:D:1999/07/21:SIGN:eyJhbGciOiJSUzI1NiIsImtpZCI6ImZha2UifQ.eyJzeW50aGV0aWMiOnRydWV9.ZmFrZS1zaWduYXR1cmU",
+      "options": {},
+      "expected": {
+        "ok": false,
+        "error": {
+          "code": "UNSUPPORTED_VERSION"
+        },
+        "raw": {
+          "map": {
+            "V": "5",
+            "G": "M",
+            "A": "6140333344445555",
+            "D": "1999/07/21"
+          }
+        }
+      }
+    },
+    {
+      "name": "missing :DLT: marker is not fayda",
+      "payload": "UklGRjQAAABXRUJQVlA4ICgAAACQAQCdASoIAAgAAUAmJYgCdLoAA5gA_ufkv43m81rW_tTYqp5OAAAA:Abebe:V:4:SIGN:eyJhbGciOiJSUzI1NiIsImtpZCI6ImZha2UifQ.eyJzeW50aGV0aWMiOnRydWV9.ZmFrZS1zaWduYXR1cmU",
+      "options": {},
+      "expected": {
+        "ok": false,
+        "error": {
+          "code": "NOT_FAYDA"
+        }
+      }
+    },
+    {
+      "name": "missing :SIGN: marker is not fayda",
+      "payload": "UklGRjQAAABXRUJQVlA4ICgAAACQAQCdASoIAAgAAUAmJYgCdLoAA5gA_ufkv43m81rW_tTYqp5OAAAA:DLT:Abebe Kebede:V:4:G:M",
+      "options": {},
+      "expected": {
+        "ok": false,
+        "error": {
+          "code": "NOT_FAYDA"
+        }
+      }
+    },
+    {
+      "name": "empty name is not fayda",
+      "payload": "UklGRjQAAABXRUJQVlA4ICgAAACQAQCdASoIAAgAAUAmJYgCdLoAA5gA_ufkv43m81rW_tTYqp5OAAAA:DLT::V:4:G:M:A:6140123412341234:D:2002/11/26:SIGN:eyJhbGciOiJSUzI1NiIsImtpZCI6ImZha2UifQ.eyJzeW50aGV0aWMiOnRydWV9.ZmFrZS1zaWduYXR1cmU",
+      "options": {},
+      "expected": {
+        "ok": false,
+        "error": {
+          "code": "NOT_FAYDA"
+        }
+      }
+    },
+    {
+      "name": "random text is not fayda",
+      "payload": "https://example.com/some-other-qr",
+      "options": {},
+      "expected": {
+        "ok": false,
+        "error": {
+          "code": "NOT_FAYDA"
+        }
+      }
+    }
+  ]
+}
