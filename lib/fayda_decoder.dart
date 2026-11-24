@@ -7,4 +7,11 @@ library;
 
 export 'src/parser.dart' show decodePayload;
 export 'src/result.dart';
+export 'src/verify.dart'
+    show
+        KeySource,
+        SignatureVerification,
+        VerificationFailureReason,
+        faydaV4PublicKeyPem,
+        verifySignature;
 export 'src/version.dart' show libraryName, libraryVersion;

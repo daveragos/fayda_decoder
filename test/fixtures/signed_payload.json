@@ -1,0 +1,5 @@
+{
+  "$comment": "Synthetic payload signed with a throwaway key by tool/generate_signed_fixture.sh. All data is fake.",
+  "publicKeyPem": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA2NkMQq1nHLtUTVTYpdKo\nG1bJ5D4l/KxOwqN1scyNwDPvY/UvtgcJ2bM7hC+R+ishlbnK1SL1oZ4yi1OWvx8D\n2bu7PX68LaIVGAygiO0qC7l1J+LukVjro9oSe5jQb2D5m/56FdQhlTtoVx5FhlzC\nAS//xRXazMHpdz0IO/mi9gRc8reqJGDqKPwHi67HYR/tSyHLnOeQlJjwaiDyl5Y3\nX7nnm7uH4Gf1hKy7yHgpImP5GHHc+jaOJoVFkBu069/y3qnZljF6iCqlvGB1WutZ\nLouyUqhjsmXJrtzHCwFPDb97DMYszWcr7kE2r1bxJZC7pPBX/j0b68224weLZpug\n2QIDAQAB\n-----END PUBLIC KEY-----",
+  "payload": "UklGRgAAAAA:DLT:Synthetic Person:V:4:G:F:A:6140123412341234:D:2000/01/02:SIGN:eyJhbGciOiJSUzI1NiJ9..NlSNr5j-lbDH-0U22lgW1gzWkYIWJt5bwTAX5dSMZa0aZ6qnDCOpVv8lCm8mxRUYFzZrmndgA4XKIEWM02iKnP4OwXKdKTiXv1FGHnQYyZP5SwxD5Axwt5GvX-f8GMXDpei37RRsEfrAsdZzg375Ge_e_qzE6tkm6Cx7nWbEQoooWZ7ery28mD75LjwCe94ID19Uk_GKwqdXEe_zDQk292ZjcjK1ohDojMTOM2ZWw9xnY1w3i6PMQmTcN3nK7ZIyGMvU2hveYgHMvqNqSxR6n_R-hUUJnmwM_7TRrPF9BotcFVhiWZeCAnf_6hLEJJwiac6Uaon4BsAZtIl2n_L09w"
+}
