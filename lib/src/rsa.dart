@@ -35,8 +35,8 @@ final class RsaPublicKey {
     }
     final rsaKey =
         _DerReader(Uint8List.sublistView(bitString, 1)).readSequence();
-    final modulus = _toBigInt(rsaKey.read(_tagInteger));
-    final exponent = _toBigInt(rsaKey.read(_tagInteger));
+    final modulus = bytesToBigInt(rsaKey.read(_tagInteger));
+    final exponent = bytesToBigInt(rsaKey.read(_tagInteger));
     return RsaPublicKey(modulus, exponent);
   }
 
@@ -65,24 +65,77 @@ bool rsaPkcs1Sha256Verify(
   final k = key.lengthInBytes;
   if (signature.length != k) return false;
 
-  final s = _toBigInt(signature);
+  final s = bytesToBigInt(signature);
   if (s >= key.modulus) return false;
-  final em = _toBytes(s.modPow(key.exponent, key.modulus), k);
+  final em = bigIntToBytes(s.modPow(key.exponent, key.modulus), k);
 
+  final expected = _emsaPkcs1Sha256(message, k);
+  return expected != null && _constantTimeEquals(em, expected);
+}
+
+/// An RSA private key in CRT form. Only used to sign test fixtures.
+final class RsaPrivateKey {
+  /// Creates a key from its CRT components.
+  const RsaPrivateKey({
+    required this.modulus,
+    required this.p,
+    required this.q,
+    required this.dp,
+    required this.dq,
+    required this.qInv,
+  });
+
+  /// The modulus `n`.
+  final BigInt modulus;
+
+  /// First prime factor.
+  final BigInt p;
+
+  /// Second prime factor.
+  final BigInt q;
+
+  /// `d mod (p - 1)`.
+  final BigInt dp;
+
+  /// `d mod (q - 1)`.
+  final BigInt dq;
+
+  /// `q^-1 mod p`.
+  final BigInt qInv;
+
+  /// The modulus length in bytes.
+  int get lengthInBytes => (modulus.bitLength + 7) >> 3;
+}
+
+/// RSASSA-PKCS1-v1_5 signing with SHA-256 (RFC 8017 section 8.2.1).
+Uint8List rsaPkcs1Sha256Sign(RsaPrivateKey key, List<int> message) {
+  final k = key.lengthInBytes;
+  final em = _emsaPkcs1Sha256(message, k);
+  if (em == null) throw ArgumentError('RSA key too small for SHA-256');
+  final m = bytesToBigInt(em);
+  // Chinese remainder theorem: about 4x faster than m^d mod n.
+  final m1 = m.modPow(key.dp, key.p);
+  final m2 = m.modPow(key.dq, key.q);
+  final h = (key.qInv * (m1 - m2)) % key.p;
+  return bigIntToBytes(m2 + h * key.q, k);
+}
+
+/// EMSA-PKCS1-v1_5 encoding of SHA-256([message]) into [k] bytes, or null
+/// if [k] is too small (RFC 8017 section 9.2).
+Uint8List? _emsaPkcs1Sha256(List<int> message, int k) {
   final digest = sha256.convert(message).bytes;
   final tLength = _sha256DigestInfoPrefix.length + digest.length;
-  if (k < tLength + 11) return false;
+  if (k < tLength + 11) return null;
 
-  final expected = Uint8List(k)
+  final em = Uint8List(k)
     ..[0] = 0x00
     ..[1] = 0x01;
   final psEnd = k - tLength - 1;
-  expected.fillRange(2, psEnd, 0xff);
-  expected[psEnd] = 0x00;
-  expected.setAll(psEnd + 1, _sha256DigestInfoPrefix);
-  expected.setAll(k - digest.length, digest);
-
-  return _constantTimeEquals(em, expected);
+  em.fillRange(2, psEnd, 0xff);
+  em[psEnd] = 0x00;
+  em.setAll(psEnd + 1, _sha256DigestInfoPrefix);
+  em.setAll(k - digest.length, digest);
+  return em;
 }
 
 const _tagInteger = 0x02;
@@ -140,7 +193,8 @@ final class _DerReader {
   }
 }
 
-BigInt _toBigInt(List<int> bytes) {
+/// Big-endian unsigned bytes to a [BigInt].
+BigInt bytesToBigInt(List<int> bytes) {
   if (bytes.isEmpty) return BigInt.zero;
   final hex = StringBuffer();
   for (final b in bytes) {
@@ -149,7 +203,8 @@ BigInt _toBigInt(List<int> bytes) {
   return BigInt.parse(hex.toString(), radix: 16);
 }
 
-Uint8List _toBytes(BigInt value, int length) {
+/// A non-negative [BigInt] to [length] big-endian bytes.
+Uint8List bigIntToBytes(BigInt value, int length) {
   final hex = value.toRadixString(16).padLeft(length * 2, '0');
   final out = Uint8List(length);
   if (hex.length > length * 2) return out; // cannot happen for value < n
