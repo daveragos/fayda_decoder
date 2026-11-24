@@ -1,6 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
+import 'package:image/image.dart' as img;
+import 'package:qr/qr.dart';
 import 'package:test/test.dart';
 
 /// One shared test vector from `testdata/vectors.json` upstream.
@@ -51,3 +54,36 @@ void expectSubset(Object? actual, Object? expected, [String path = r'$']) {
     expect(actual, equals(expected), reason: path);
   }
 }
+
+/// Renders [text] as a QR code image (EC level L, like real cards), [scale]
+/// pixels per module with a 4-module quiet zone.
+img.Image renderQr(String text, {int scale = 6}) {
+  // One UTF-8 byte segment without an ECI header, like the npm `qrcode`
+  // package the upstream tests use.
+  final qr = QrImage(QrCode(
+    payload: QrPayload.fromTypedData(utf8.encode(text)),
+    errorCorrectLevel: QrErrorCorrectLevel.low,
+  ));
+  const margin = 4;
+  final size = (qr.moduleCount + margin * 2) * scale;
+  final image = img.Image(width: size, height: size);
+  img.fill(image, color: img.ColorRgb8(255, 255, 255));
+  for (var row = 0; row < qr.moduleCount; row++) {
+    for (var col = 0; col < qr.moduleCount; col++) {
+      if (!qr.isDark(row, col)) continue;
+      img.fillRect(
+        image,
+        x1: (col + margin) * scale,
+        y1: (row + margin) * scale,
+        x2: (col + margin + 1) * scale - 1,
+        y2: (row + margin + 1) * scale - 1,
+        color: img.ColorRgb8(0, 0, 0),
+      );
+    }
+  }
+  return image;
+}
+
+/// [renderQr] encoded as PNG bytes.
+Uint8List qrPng(String text, {int scale = 6}) =>
+    img.encodePng(renderQr(text, scale: scale));
