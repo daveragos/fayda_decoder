@@ -7,6 +7,7 @@ const _dltMarker = ':DLT:';
 const _signMarker = ':SIGN:';
 
 final _fanPattern = RegExp(r'^\d{10,20}$');
+final _whitespace = RegExp(r'\s');
 final _dobPattern = RegExp(r'^(\d{4})/(\d{2})/(\d{2})$');
 
 const _notFayda = FaydaFailure(FaydaError(
@@ -118,8 +119,15 @@ FaydaGender? _parseGender(String? value) => switch (value) {
       _ => null,
     };
 
-String? _parseFan(String? value) =>
-    value != null && _fanPattern.hasMatch(value) ? value : null;
+/// The FAN as digits only, or null unless that is 10 to 20 digits.
+///
+/// Cards store it in space-separated groups (`9999  9999  9999  9999`), so
+/// whitespace is dropped before validating. `raw.map` keeps the original.
+String? _parseFan(String? value) {
+  if (value == null) return null;
+  final digits = value.replaceAll(_whitespace, '');
+  return _fanPattern.hasMatch(digits) ? digits : null;
+}
 
 /// `yyyy/mm/dd` (Gregorian) to ISO `yyyy-mm-dd`, or null if not a real date.
 String? _parseDob(String? value) {

@@ -111,7 +111,8 @@ final class FaydaFields {
   /// `M` or `F`, or null if the payload carried something else.
   final FaydaGender? gender;
 
-  /// Fayda Account Number (the card number), 10 to 20 digits.
+  /// Fayda Account Number (the card number): 10 to 20 digits, without the
+  /// spaces cards store between groups. Use [formattedFan] for display.
   final String? fan;
 
   /// Date of birth as ISO `yyyy-mm-dd`, Gregorian calendar.

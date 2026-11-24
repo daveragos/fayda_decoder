@@ -46,6 +46,8 @@ final _testKey = RsaPrivateKey(
 /// - [face]: WebP bytes, defaults to [faydaTestFace]. Pass an empty list for
 ///   a payload without a face.
 /// - [gender], [fan], [dateOfBirth]: null leaves the key out.
+/// - [fan] is written as given. Real cards store it in groups separated by
+///   two spaces; pass `fan: '6140  1234  1234  1234'` to match them.
 /// - [overrides]: raw key/value fields applied last, to produce malformed
 ///   data. A null value removes the key:
 ///   `overrides: {'D': '1990/02/31'}`, `overrides: {'V': '5'}`.

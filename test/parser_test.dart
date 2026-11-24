@@ -5,6 +5,7 @@ import 'dart:io';
 
 import 'package:fayda_decoder/fayda_decoder.dart';
 import 'package:fayda_decoder/src/base64.dart';
+import 'package:fayda_decoder/testing.dart';
 import 'package:test/test.dart';
 
 import 'helpers.dart';
@@ -121,6 +122,34 @@ void main() {
       expect(dob('2001/13/01'), isNull);
       expect(dob('2001/00/10'), isNull);
       expect(dob('2001/1/10'), isNull);
+    });
+
+    test('reads a FAN stored in space-separated groups, as on real cards', () {
+      FaydaSuccess decodeFan(String a) =>
+          decodePayload(valid.replaceFirst(':A:6140123412341234:', ':A:$a:'))
+              as FaydaSuccess;
+      String? fan(String a) => decodeFan(a).fields.fan;
+
+      expect(fan('6140  1234  1234  1234'), '6140123412341234');
+      expect(fan('6140 1234 1234 1234'), '6140123412341234');
+      expect(fan(' 6140123412341234 '), '6140123412341234');
+      expect(decodeFan('6140  1234  1234  1234').raw.map['A'],
+          '6140  1234  1234  1234');
+
+      expect(fan('6140-1234-1234-1234'), isNull);
+      expect(fan('6140  1234  12AB  1234'), isNull);
+      expect(fan('6140  1234'), isNull); // too short
+      expect(fan('    '), isNull);
+    });
+
+    test('a grouped FAN still verifies', () {
+      final result =
+          decodePayload(buildTestPayload(fan: '6140  1234  1234  1234'))
+              as FaydaSuccess;
+      expect(result.fields.fan, '6140123412341234');
+      expect(result.fields.formattedFan, '6140 1234 1234 1234');
+      expect(
+          result.verify(publicKeyPem: faydaTestPublicKeyPem).verified, isTrue);
     });
 
     test('unknown gender becomes null', () {
