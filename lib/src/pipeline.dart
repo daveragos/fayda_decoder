@@ -23,7 +23,7 @@ Future<FaydaResult> decodeImage(
   Uint8List bytes, {
   bool includeFace = false,
   QrScanner scanner = const ZxingQrScanner(),
-}) {
+}) async {
   return decodeImageData(
     imageBytesToRgba(bytes),
     includeFace: includeFace,
@@ -35,11 +35,19 @@ Future<FaydaResult> decodeImage(
 ///
 /// Throws a [FormatException] if [bytes] cannot be decoded.
 RgbaImage imageBytesToRgba(Uint8List bytes) {
-  final decoded = img.decodeImage(bytes);
+  const invalid = FormatException(
+    'fayda_decoder: unsupported or corrupt image data',
+  );
+  img.Image? decoded;
+  try {
+    decoded = img.decodeImage(bytes);
+  } on Object {
+    // Some package:image versions throw RangeError and friends on garbage
+    // input instead of returning null.
+    throw invalid;
+  }
   if (decoded == null || decoded.width == 0 || decoded.height == 0) {
-    throw const FormatException(
-      'fayda_decoder: unsupported or corrupt image data',
-    );
+    throw invalid;
   }
   final rgba = decoded.convert(format: img.Format.uint8, numChannels: 4);
   return RgbaImage(
