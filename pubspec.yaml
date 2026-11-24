@@ -13,6 +13,9 @@ topics:
   - qr-code
   - kyc
 
+executables:
+  fayda_decoder:
+
 environment:
   sdk: ^3.5.0
 
