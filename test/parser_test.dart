@@ -1,3 +1,6 @@
+@TestOn('vm')
+library;
+
 import 'dart:io';
 
 import 'package:fayda_decoder/fayda_decoder.dart';

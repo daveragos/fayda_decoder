@@ -1,0 +1,57 @@
+name: Bug report
+description: Something decodes wrong, crashes, or does not verify.
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Never share a real person's card.** QR text, photos and face
+        images from a Fayda card are personal data and a national ID number.
+        Reproduce with `buildTestPayload()` from
+        `package:fayda_decoder/testing.dart`, or describe the card
+        (version, name script, photo conditions) instead.
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy
+      options:
+        - label: This issue contains no real card data (QR text, photo, face, FAN or name).
+          required: true
+  - type: input
+    id: version
+    attributes:
+      label: fayda_decoder version
+      placeholder: 0.1.0
+    validations:
+      required: true
+  - type: dropdown
+    id: entry
+    attributes:
+      label: Which API?
+      options:
+        - decodePayload
+        - decodeImage / decodeImageInBackground
+        - decodeImageData / camera frames
+        - verifySignature
+        - testing library
+        - command-line tool
+        - other
+    validations:
+      required: true
+  - type: input
+    id: platform
+    attributes:
+      label: Platform
+      placeholder: Flutter 3.x on Android 14, Dart VM, Chrome, ...
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what did you expect?
+      description: Include the error code (NO_QR_FOUND, NOT_FAYDA, ...) or verification reason.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction
+      description: A minimal snippet, ideally using buildTestPayload or buildTestQrPng.
+      render: dart
