@@ -104,6 +104,19 @@ final class SignatureVerification {
       };
 
   @override
+  bool operator ==(Object other) =>
+      other is SignatureVerification &&
+      other.verified == verified &&
+      other.algorithm == algorithm &&
+      other.payloadVersion == payloadVersion &&
+      other.keySource == keySource &&
+      other.reason == reason;
+
+  @override
+  int get hashCode =>
+      Object.hash(verified, algorithm, payloadVersion, keySource, reason);
+
+  @override
   String toString() => verified
       ? 'SignatureVerification(verified, ${keySource.code})'
       : 'SignatureVerification(${reason?.code}, ${keySource.code})';

@@ -109,8 +109,8 @@ void main() {
   test('verify() extension matches verifySignature', () {
     final result = parse(payload);
     expect(
-      result.verify(publicKeyPem: publicKeyPem).toJson(),
-      verifySignature(result, publicKeyPem: publicKeyPem).toJson(),
+      result.verify(publicKeyPem: publicKeyPem),
+      verifySignature(result, publicKeyPem: publicKeyPem),
     );
   });
 
